@@ -1,0 +1,4 @@
+lib/*
+*.gba
+*.bin
+gbainfo
