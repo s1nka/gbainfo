@@ -143,13 +143,12 @@ var
   iSize: Integer;
   wHomeDir: WideString;
 begin
-  iSize:= GetEnvironmentVariableW('USERPROFILE', nil, 0);
+  iSize := Length(GetEnvironmentVariable('USERPROFILE'));
   if iSize > 0 then
     begin
       SetLength(wHomeDir, iSize);
-      GetEnvironmentVariableW('USERPROFILE', PWChar(wHomeDir), iSize);
+      wHomeDir := GetEnvironmentVariable('USERPROFILE');
     end;
-  Delete(wHomeDir, iSize, 1);
   Result:= wHomeDir;
 end;
 {$ELSE}
@@ -180,7 +179,6 @@ begin
 
   // 0x00 - 0x03	Start Code
   WriteLn('start code:       '+BinToStr(Data[$0..$3]));
-
   if FileExists(GetHomeDir+'/.config/gbatools/gba_bios.bin') then
     BIOSDir:= GetHomeDir+'/.config/gbatools/'
   else

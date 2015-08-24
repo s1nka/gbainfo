@@ -2,3 +2,4 @@ lib/*
 *.gba
 *.bin
 gbainfo
+gbainfo.exe
