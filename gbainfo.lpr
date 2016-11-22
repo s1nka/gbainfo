@@ -132,38 +132,14 @@ begin
     if Companies[i,0]=ID then Result := Companies[i,1];
 end;
 
-function CheckBIOSFile(const FileName : String) : Boolean;
+function CheckBIOSFile(const Str : String) : Boolean;
 begin
- Result :=  MD5Print(MD5File(FileName))='a860e8c0b6d573d191e4ec7db1b1e4f6';
+  Result :=  MD5Print(MD5String(Str))='8f12a4c24d5e55f72f522bbcdf418e93';
 end;
-
-function GetHomeDir : String;
-{$IFDEF MSWINDOWS}
-var
-  iSize: Integer;
-  wHomeDir: WideString;
-begin
-  iSize := Length(GetEnvironmentVariable('USERPROFILE'));
-  if iSize > 0 then
-    begin
-      SetLength(wHomeDir, iSize);
-      wHomeDir := GetEnvironmentVariable('USERPROFILE');
-    end;
-  Result:= wHomeDir;
-end;
-{$ELSE}
-begin
-  Result:= GetEnvironmentVariable('HOME');
-end;
-{$ENDIF}
 
 procedure PrintHeader(FileName : string);
 var Data          : Array [0..$BF] of Byte;
-    NintendoLogo  : Array [$4..$9F] of Byte;
-    ROMFile,
-    BIOSFile      : File;
-    BIOSDir       : String;
-    CorrectLogo   : Boolean;
+    ROMFile       : File;
     i             : Integer;
     foo           : String;
 begin
@@ -179,48 +155,12 @@ begin
 
   // 0x00 - 0x03	Start Code
   WriteLn('start code:       '+BinToStr(Data[$0..$3]));
-  if FileExists(GetHomeDir+'/.config/gbatools/gba_bios.bin') then
-    BIOSDir:= GetHomeDir+'/.config/gbatools/'
-  else
-    BIOSDir:= './';
-  if FileExists(BIOSDir+'gba_bios.bin') then
-  begin
-    if CheckBIOSFile(BIOSDir+'gba_bios.bin') then
-    begin
-      AssignFile(BIOSFile,BIOSDir+'gba_bios.bin');
-      Reset(BIOSFile,1);
-      Seek(BIOSFile,$3290);
-      NintendoLogo[4] := 0; //hide hint message
-      FillByte(NintendoLogo,SizeOf(NintendoLogo),0);
-      try
-        BlockRead(BIOSFile,NintendoLogo, SizeOf(NintendoLogo));
-      finally
-        CloseFile(BIOSFile);
-      end;
-      CorrectLogo := True;
-      for i := $4 to $9F do
-      begin
-        if Data[i] <> NintendoLogo[i] then
-        begin
-          CorrectLogo := False;
-          Break;
-        end;
-      end;
 
-      if CorrectLogo then
-        WriteLn('logo:             correct')
-      else
-        WriteLn('logo:             not correct');
-      end
-    else
-      WriteLn('logo:             bios is not correct');
-    end
-  else
-  begin
-    WriteLn('logo:             bios file not found');
-  end;
   // 0x04 - 0x9F	Nintendo Logo Data
-  //WriteLn('logo: '+BinToStr(Data[$4..$9f]));
+  if CheckBIOSFile(BinToStr(Data[$4..$9f])) Then
+    WriteLn('logo:             correct')
+  else
+    WriteLn('logo:             not correct');
   // 0xA0 - 0xAB	Game Title
   foo := '';
   for i := $A0 to $AB do
